@@ -1,0 +1,86 @@
+o<panel_probe> sub
+
+( #<probe_tool_number> = #1    1)
+(  #<max_z_distance> = #2       #4000)
+(  #<max_xy_distance> = #3      #4001)
+(  #<xy_clearance> = #4         #4002)
+(  #<z_clearance> = #5          #4003)
+( #<step_off_width> = #6       #4004)
+(  #<extra_probe_depth> = #7    #4005)
+(  #<probe_slow_fr> = #8        #4006)
+( #<probe_fast_fr> = #9        #4007)
+(  #<calibration_offset> = #10  #1000)
+(  #<x_hint> = #11              =1.0000)
+(  #<y_hint> = #12              =1.0000)
+(  #<diameter_hint> = #13       =1.0000)
+(  #<edge_width> = #14          =0.5000)
+( #<probe_mode> = #15          #4008)
+(  #<max_vel_slider> = #16      #4009) 
+
+(#<probe_back_left_top_corner> = #1)
+(#<probe_back_top_side> = #2)
+(#<probe_back_right_top_corner> = #3)
+(#<probe_left_top_side> = #4)
+(#<probe_z_minus_wco> = #5)
+(#<probe_right_top_side> = #6)
+(#<probe_front_left_top_corner> = #7)
+(#<probe_front_top_side> = #8)
+(#<probe_front_right_top_corner = #9)
+(1|2|3)
+(4|5|6)
+(7|8|9)
+
+#<probe_loaction> = #1
+
+o100 if [#<probe_loaction> EQ 1]
+     M64 P1
+     o<probe_back_left_top_corner> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     M65 P1
+     0 = #<probe_loaction>
+o100 else if [#<probe_loaction> EQ 2]
+     M64 P2
+     o<probe_back_top_side> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>
+     M65 P2
+o100 else if [#<probe_loaction> EQ 3]
+     M64 P3
+     o<probe_back_right_top_corner> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>
+     M65 P3
+o100 else if [#<probe_loaction> EQ 4]
+     M64 P4
+     o<probe_left_top_side> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>
+     M65 P4
+o100 else if [#<probe_loaction> EQ 5]
+     M64 P5
+     o<probe_z_minus_wco> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>,
+     M65 P5
+o100 else if [#<probe_loaction> EQ 6]
+     M64 P6
+     o<probe_right_top_side> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>
+     M65 P6
+o100 else if [#<probe_loaction> EQ 7]
+     M64 P7
+     o<probe_front_left_top_corner> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>
+     M65 P7
+o100 else if [#<probe_loaction> EQ 8]
+     M64 P8
+     o<probe_front_top_side> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>
+    M65 P8
+o100 else if [#<probe_loaction> EQ 9]
+     M64 P9
+     o<probe_front_right_top_corner> call [1][#4000][#4001][#4002][#4003][#4004][#4005][#4006][#4007][#1000][1][1][1][1][#4008][#4009]
+     0 = #<probe_loaction>
+     M65 P9
+0100 endif    
+
+
+
+o<panel_probe> endsub
+
+M2 (end program)

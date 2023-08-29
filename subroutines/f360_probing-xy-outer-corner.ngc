@@ -1,0 +1,106 @@
+o<f360_probing-xy-outer-corner> sub
+(SG, probe outer corner)
+
+(fetch our parameters into named variables)
+#<x> = #1
+#<y> = #2
+#<z> = #3
+#<nominaldiameter> = #4
+#<feed> = #5
+#<depth> = #6
+#<xapproach> = #7
+#<yapproach> = #8
+#<clearance> = #9
+#<overtravel> = #10
+#<retract> = #11
+#<targetwcs> = #12
+
+// tolerance parameters
+#<sizeTolerance> = #13
+#<wrongSizeAction> = #14
+#<positionTolerance> = #15
+#<wrongPositionAction> = #16
+#<angleTolerance> = #17
+#<wrongAngleAction> = #18
+#<printResults> = #19
+
+(Probe Protection)
+M66 P0
+o<probe_protection> call
+
+(we will need to know the accurate - tool table - tip radius)
+o<f360_tip_radius> call
+#<tip_radius> = #<_value>
+
+(and we need the speed to use for rapids)
+#<rapid_speed> = #<feed>
+
+G90 (set to absolute position mode)
+G92.1  (Cancel G92 offset, maybe some day it should be allowed)
+
+(rapid down to retract height)
+G1 F#<rapid_speed> Z#<retract>
+
+(safe move down to probe height)
+o<f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(feed in y ready for the x-probe)
+o<f360_safe_move_y> call [#<yapproach> * [2 * #<clearance> + #<nominaldiameter> / 2]] [#<feed>]
+
+(do the x-probe)
+o<f360_probe_x> call [#<xapproach>] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<xhit> = [#5061 + #<xapproach> * #<tip_radius>]
+
+(where should it have been)
+#<xexpected> = [#<x> + #<xapproach> * [#<clearance> + #<nominaldiameter>/2.0]]
+
+(return to the starting position)
+G90
+G1 F#<rapid_speed> X#<x>
+Y#<y>
+
+(x feed ready for the y-probe)
+o<f360_safe_move_x> call [#<xapproach> * [2 * #<clearance> + #<nominaldiameter> / 2]] [#<feed>]
+
+(then do the y-probe)
+o<f360_probe_y> call [#<yapproach>] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<yhit> = [#5062 + #<yapproach> * #<tip_radius>]
+
+(where should it have been)
+#<yexpected> = [#<y> + #<yapproach> * [#<clearance> + #<nominaldiameter>/2.0]]
+
+(return to the starting position)
+G90
+G1 F#<rapid_speed> Y#<y>
+X#<x>
+G0 Z#<retract>
+
+o202 if [#<printResults>]
+	(MSG,probing-xy-outer-corner)
+	(DEBUG,X=#<xhit>[#<xexpected>]);
+	(DEBUG,Y=#<yhit>[#<yexpected>]);
+o202 endif
+
+o200 if [#<targetwcs> GT 500]
+	(print report)
+	(LOGAPPEND,inspection.txt)
+	(LOG,X=#<xhit>[#<xexpected>],#<positionTolerance>,#<wrongPositionAction>);
+	(LOG,Y=#<yhit>[#<yexpected>],#<positionTolerance>,#<wrongPositionAction>);
+	(LOGCLOSE)
+o200 else
+	(tolerance testing)
+	o<f360_check_position> call [#<xhit>] [#<xexpected>] [#<positionTolerance>] [#<wrongPositionAction>]
+
+	(modify the target WCS)
+	o<f360_update_x> call [#<targetwcs>] [#<xhit>] [#<xexpected>]
+	o<f360_update_y> call [#<targetwcs>] [#<yhit>] [#<yexpected>]
+o200 endif
+
+o<f360_probing-xy-outer-corner> endsub
+
+M02 (end program)
+

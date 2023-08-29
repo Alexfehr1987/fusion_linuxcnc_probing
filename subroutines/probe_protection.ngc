@@ -1,0 +1,21 @@
+o<probe_protection> sub
+#<tool_number> = #5400
+#<probe_error_pin> = #5399
+
+M66 P0
+
+(Probe Protection)
+
+
+o100 while[#<tool_number> EQ 1 AND #<probe_error_pin> EQ 1]
+	(MSG, Probe not active!)
+	M0
+	M66 P0	
+	#<probe_error_pin> = #5399
+o100 endwhile
+
+
+
+o<probe_protection> endsub
+
+M2 (end program)

@@ -1,0 +1,100 @@
+o<f360_probing-y-plane-angle> sub
+(SG, Probe y-plane-angle)
+
+(fetch our parameters into named variables)
+#<x> = #1
+#<y> = #2
+#<z> = #3
+#<nominaldiameter> = #4
+#<feed> = #5
+#<depth> = #6
+#<approach> = #7
+#<clearance> = #8
+#<overtravel> = #9
+#<retract> = #10
+#<targetwcs> = #11
+#<probespacing> = #12
+
+// tolerance parameters
+#<sizeTolerance> = #13
+#<wrongSizeAction> = #14
+#<positionTolerance> = #15
+#<wrongPositionAction> = #16
+#<angleTolerance> = #17
+#<wrongAngleAction> = #18
+#<printResults> = #19
+
+(Probe Protection)
+M66 P0
+o<probe_protection> call
+
+(reset rotation)
+G10 L2 P#<targetwcs> R0
+(DEBUG, Reset WCS rotation)
+
+(we need the speed to use for rapids)
+#<rapid_speed> = #<feed>
+
+G90 (set to absolute position mode)
+G92.1  (Cancel G92 offset, maybe some day it should be allowed)
+
+(rapid down to retract height)
+G1 F#<rapid_speed> Z#<retract>
+
+(then feed down to probe height)
+(down to prob height)
+o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(feed to -ve x)
+o <f360_safe_move_x> call [-#<probespacing>/2] [#<feed>]
+
+(now do the first probe)
+o<f360_probe_y> call [#<approach>] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<hit1> = #5062
+
+(return to the centre)
+G90 G1 F#<rapid_speed> Y#<y>
+X#<x>
+
+(feed to +ve x)
+o <f360_safe_move_x> call [#<probespacing>/2] [#<feed>]
+
+(now do the second probe)
+o<f360_probe_y> call [#<approach>] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<hit2> = #5062
+
+(return to centre and retract z)
+G90 G1 F#<rapid_speed> Y#<y>
+X#<x>
+G0 Z#<retract>
+
+(calculate the wall angle)
+#<dy> = [#<hit2> - #<hit1>]
+#<angle> = [ATAN [#<dy>] / [#<probespacing>]]
+
+o202 if [#<printResults>]
+	(MSG,probing-y-plane-angle)
+	(DEBUG,dy=#<dy>[0.0]);
+	(DEBUG,angle=#<angle>[0.0])
+o202 endif
+
+o200 if [#<targetwcs> GT 500]
+	(print report)
+	(LOGAPPEND,inspection.txt)
+	(LOG,angle=#<angle>[0.0],#<angleTolerance>,#<wrongAngleAction>)
+	(LOGCLOSE)
+o200 else
+	(tolerance testing)
+	o<f360_check_angle> call [#<angle>] [0.0] [#<angleTolerance>] [#<wrongAngleAction>]
+	(update the WCS rotation angle)
+	G10 L2 P#<targetwcs> R#<angle>
+	(DEBUG, Set R#<angle> to WCS#<targetwcs>)
+o200 endif
+
+o<f360_probing-y-plane-angle> endsub
+
+M02 (end program)

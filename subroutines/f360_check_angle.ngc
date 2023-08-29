@@ -1,0 +1,24 @@
+o<f360_check_angle> sub
+
+(fetch our parameters into named variables)
+#<was> = #1
+#<expected> = #2
+#<tolerance> = #3
+#<action> = #4
+
+(Probe Protection)
+M66 P0
+o<probe_protection> call
+
+(if the probe hit, print error and stop program)
+o100 if [#<action> NE 0]
+	#<angleError> = abs[#<was> - #<expected>]
+	o101 if [#<angleError> GT #<tolerance>]
+		(DEBUG, Angle out of tolerance, error = #<angleError>)
+		M0
+	o101 endif
+o100 endif
+
+o<f360_check_angle> endsub
+
+M02 (end program)

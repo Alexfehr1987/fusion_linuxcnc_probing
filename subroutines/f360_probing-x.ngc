@@ -1,0 +1,80 @@
+o<f360_probing-x> sub
+(SG, Probe x)
+
+(fetch our parameters into named variables)
+#<x> = #1
+#<y> = #2
+#<z> = #3
+#<nominaldiameter> = #4
+#<feed> = #5
+#<depth> = #6
+#<approach> = #7
+#<clearance> = #8
+#<overtravel> = #9
+#<retract> = #10
+#<targetwcs> = #11
+
+// tolerance parameters
+#<sizeTolerance> = #12
+#<wrongSizeAction> = #13
+#<positionTolerance> = #14
+#<wrongPositionAction> = #15
+#<angleTolerance> = #16
+#<wrongAngleAction> = #17
+#<printResults> = #18
+
+(Probe Protection)
+M66 P0
+o<probe_protection> call
+
+(we will need to know the accurate - tool table - tip radius)
+o<f360_tip_radius> call
+#<tip_radius> = #<_value>
+
+(and we need the speed to use for rapids)
+#<rapid_speed> = #<feed>
+
+G90 (set to absolute position mode)
+G92.1  (Cancel G92 offset, maybe some day it should be allowed)
+
+(rapid down to retract height)
+G1 F#<rapid_speed> Z#<retract>
+
+(safe move down to probe height)
+o<f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(probe x)
+o<f360_probe_x> call [#<approach>] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<hit> = [#5061 + #<approach> * #<tip_radius>]
+
+(where should it have been)
+#<expected> = [#<x> + #<approach> * [#<clearance> + #<nominaldiameter>/2.0]]
+
+o202 if [#<printResults>]
+	(MSG,probing-x)
+	(DEBUG,X=#<hit>[#<expected>]);
+o202 endif
+
+o200 if [#<targetwcs> GT 500]
+	(print report)
+	(LOGAPPEND,inspection.txt)
+	(LOG,X=#<hit>[#<expected>],#<positionTolerance>,#<wrongPositionAction>);
+	(LOGCLOSE)
+o200 else
+	(tolerance testing)
+	o<f360_check_position> call [#<hit>] [#<expected>] [#<positionTolerance>] [#<wrongPositionAction>]
+	
+	(modify the target WCS)
+	o<f360_update_x> call [#<targetwcs>] [#<hit>] [#<expected>]
+o200 endif
+
+(return to the starting position)
+G90
+G1 F#<rapid_speed> X#<x>
+G0 F#<rapid_speed> Z#<z>
+
+o<f360_probing-x> endsub
+
+M02 (end program)

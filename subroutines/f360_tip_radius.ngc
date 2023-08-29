@@ -1,0 +1,16 @@
+o<f360_tip_radius> sub
+
+#<calibration_offset> = #1000
+
+#<probe_diameter_uncalibrated> = #5410
+
+(we will need to know the accurate - tool table - tip radius)
+o100 if [#<_metric> EQ 1]
+    #<unit_conv> = 1
+o100 else
+    #<unit_conv> = 1
+o100 endif
+
+#<probe_diameter_calibrated> = [#<probe_diameter_uncalibrated> - [#<calibration_offset> * 2]]
+
+o<f360_tip_radius> endsub [[#<probe_diameter_calibrated> / 2] * #<unit_conv>]

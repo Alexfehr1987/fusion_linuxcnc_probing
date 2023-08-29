@@ -1,0 +1,21 @@
+o<f360_safe_move_xy> sub
+(probe in XY plus direction)
+
+(fetch our parameters into named variables)
+#<x> = #1
+#<y> = #2
+#<feed> = #3
+
+G91 		(set to relative position mode)
+G38.3 X#<x> Y#<y> F#<feed>
+
+(if the probe hit, print error and stop program)
+o100 if [#5070 EQ 1]
+	(probe struck something)
+	(MSG, Probe made contact during safe X move)
+	M0
+o100 endif
+
+o<f360_safe_move_xy> endsub
+
+M02 (end program)

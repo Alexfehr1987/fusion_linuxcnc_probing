@@ -1,0 +1,20 @@
+o<f360_safe_move_z> sub
+(probe in z direction)
+
+(fetch our parameters into named variables)
+#<z> = #1
+#<feed> = #2
+
+G91 		(set to relative position mode)
+G38.3 Z#<z> F#<feed>
+
+(if the probe hit, print error and stop program)
+o100 if [#5070 EQ 1]
+	(probe struck something)
+	(MSG, Probe made contact during safe Z move)
+	M0
+o100 endif
+
+o<f360_safe_move_z> endsub
+
+M02 (end program)

@@ -1,0 +1,19 @@
+o<f360_slow_probe_speed> sub
+(return the slow probe speed)
+
+(has the slow probe speed been defined)
+o100 if [exists[#<_probeSlowSpeed>] EQ 0]
+	(default imperial speed in inch/min)
+	#<_probeSlowSpeed> = 1.0
+
+	o101 if [#<_metric>]
+		(convert to metric if required)
+		#<_probeSlowSpeed> = [#<_probeSlowSpeed> * 25.4]
+	o101 endif
+o100 endif
+
+
+o<f360_slow_probe_speed> endsub [#<_probeSlowSpeed>]
+
+M02 (end program)
+

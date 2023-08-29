@@ -1,0 +1,189 @@
+o<f360_probing-xy-circular-hole-with-island> sub
+(SG, probe circular hole with island)
+
+(fetch our parameters into named variables)
+#<x> = #1
+#<y> = #2
+#<z> = #3
+#<nominaldiameter> = #4
+#<feed> = #5
+#<depth> = #6
+#<holediameter> = #7
+#<clearance> = #8
+#<overtravel> = #9
+#<retract> = #10
+#<targetwcs> = #11
+
+// tolerance parameters
+#<sizeTolerance> = #12
+#<wrongSizeAction> = #13
+#<positionTolerance> = #14
+#<wrongPositionAction> = #15
+#<angleTolerance> = #16
+#<wrongAngleAction> = #17
+#<printResults> = #18
+
+(Probe Protection)
+M66 P0
+o<probe_protection> call
+
+(we will need to know the accurate - tool table - tip radius)
+o<f360_tip_radius> call
+#<tip_radius> = #<_value>
+
+(and we need the speed to use for rapids)
+#<rapid_speed> = #<feed>
+
+G90 (set to absolute position mode)
+G92.1  (Cancel G92 offset, maybe some day it should be allowed)
+
+(rapid down to retract height)
+G1 F#<rapid_speed> Z#<retract>
+
+(feed to the left)
+o <f360_safe_move_x> call [-#<holediameter>/2 + #<clearance> + #<nominaldiameter>/2] [#<feed>]
+
+(down to probe height)
+o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(now do the first probe)
+o<f360_probe_x> call [-1] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<xhit1> = [#5061 - #<tip_radius>]
+
+(return to the centre)
+G90 G1 F#<rapid_speed> X[#<x> - #<holediameter>/2 + #<clearance> + #<nominaldiameter>/2]
+G0 Z#<retract>
+G1 X#<x>
+
+(feed to the right)
+o <f360_safe_move_x> call [#<holediameter>/2 - #<clearance> - #<nominaldiameter>/2] [#<feed>]
+
+(down to probe height)
+o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(now do the 2nd probe)
+o<f360_probe_x> call [1] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<xhit2> = [#5061 + #<tip_radius>]
+
+(calculate the hole centre)
+#<xholecentre> = [[#<xhit1> + #<xhit2>] / 2.0]
+
+(return to the centre)
+G90 G1 F#<rapid_speed> X[#<x> + #<holediameter>/2 - #<clearance> - #<nominaldiameter>/2]
+G0 Z#<retract>
+G1 X#<xholecentre>
+
+(feed backward)
+o <f360_safe_move_y> call [-#<holediameter>/2 + #<clearance> + #<nominaldiameter>/2] [#<feed>]
+
+(down to probe height)
+o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(now do the first probe)
+o<f360_probe_y> call [-1] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<yhit1> = [#5062 - #<tip_radius>]
+
+(return to the centre)
+G90 G1 F#<rapid_speed> Y[#<y> - #<holediameter>/2 + #<clearance> + #<nominaldiameter>/2]
+G0 Z#<retract>
+G1 Y#<y>
+
+(feed forward)
+o <f360_safe_move_y> call [#<holediameter>/2 - #<clearance> - #<nominaldiameter>/2] [#<feed>]
+
+(down to probe height)
+o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(now do the second probe)
+o<f360_probe_y> call [1] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<yhit2> = [#5062 + #<tip_radius>]
+
+(calculate the hole centre)
+#<yholecentre> = [[#<yhit1> + #<yhit2>] / 2.0]
+
+(return to centre and retract z)
+G90 G1 F#<rapid_speed> Y[#<y> + #<holediameter>/2 - #<clearance> - #<nominaldiameter>/2]
+G0 Z#<retract>
+G1 Y#<yholecentre>
+
+(now we have a good ycentre, repeat the x probe)
+(feed to the left)
+o <f360_safe_move_x> call [-#<holediameter>/2 + #<clearance> + #<nominaldiameter>/2] [#<feed>]
+
+(down to probe height)
+o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(now do the first probe)
+o<f360_probe_x> call [-1] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<xhit1> = [#5061 - #<tip_radius>]
+
+(return to the centre)
+G90 G1 F#<rapid_speed> X[#<xholecentre> - #<holediameter>/2 + #<clearance> + #<nominaldiameter>/2]
+G0 Z#<retract>
+G1 X#<xholecentre>
+
+(feed to the right)
+o <f360_safe_move_x> call [#<holediameter>/2 - #<clearance> - #<nominaldiameter>/2] [#<feed>]
+
+(down to probe height)
+o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+(now do the 2nd probe)
+o<f360_probe_x> call [1] [#<clearance> + #<overtravel>]
+
+(where did the hit occur)
+#<xhit2> = [#5061 + #<tip_radius>]
+
+(calculate the hole centre)
+#<xholecentre> = [[#<xhit1> + #<xhit2>] / 2.0]
+
+(return to the centre)
+G90 G1 F#<rapid_speed> X[#<xholecentre> + #<holediameter>/2 - #<clearance> - #<nominaldiameter>/2]
+G0 Z#<retract>
+G1 X#<xholecentre>
+
+#<width> = [#<xhit2> - #<xhit1>]
+#<height> = [#<yhit2> - #<yhit1>]
+
+o202 if [#<printResults>]
+	(MSG,probing-xy-circular-hole-with-island)
+	(DEBUG,Xcentre=#<xholecentre>[#<x>]);
+	(DEBUG,Ycentre=#<yholecentre>[#<y>]);
+	(DEBUG,Xdia=#<width>[#<holediameter>])
+	(DEBUG,Ydia=#<height>[#<holediameter>])
+o202 endif
+
+o200 if [#<targetwcs> GT 500]
+	(print report)
+	(LOGAPPEND,inspection.txt)
+	(LOG,Xcentre=#<xholecentre>[#<x>],#<positionTolerance>,#<wrongPositionAction>);
+	(LOG,Ycentre=#<yholecentre>[#<y>],#<positionTolerance>,#<wrongPositionAction>);
+	(LOG,Xdia=#<width>[#<holediameter>],#<sizeTolerance>,#<wrongSizeAction>)
+	(LOG,Ydia=#<height>[#<holediameter>],#<sizeTolerance>,#<wrongSizeAction>)
+	(LOGCLOSE)
+o200 else
+	(tolerance testing)
+	o<f360_check_position> call [#<xholecentre>] [#<x>] [#<positionTolerance>] [#<wrongPositionAction>]
+	o<f360_check_position> call [#<yholecentre>] [#<y>] [#<positionTolerance>] [#<wrongPositionAction>]
+	o<f360_check_size> call [#<width>] [#<holediameter>] [#<sizeTolerance>] [#<wrongSizeAction>]
+	o<f360_check_size> call [#<height>] [#<holediameter>] [#<sizeTolerance>] [#<wrongSizeAction>]
+
+	(update the WCS)
+	o<f360_update_x> call [#<targetwcs>] [#<xholecentre>] [#<x>]
+	o<f360_update_y> call [#<targetwcs>] [#<yholecentre>] [#<y>]
+o200 endif
+
+o<f360_probing-xy-circular-hole-with-island> endsub
+
+M02 (end program)
+

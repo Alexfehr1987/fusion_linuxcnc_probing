@@ -1,0 +1,204 @@
+o<f360_probing-xy-circular-partial-hole-with-island> sub
+(SG, probe circular hole with island)
+
+(fetch our parameters into named variables)
+#<x> = #1
+#<y> = #2
+#<z> = #3
+#<nominaldiameter> = #4
+#<feed> = #5
+#<depth> = #6
+#<holediameter> = #7
+#<clearance> = #8
+#<overtravel> = #9
+#<retract> = #10
+#<targetwcs> = #11
+#<alpha1> = #12
+#<alpha2> = #13
+#<alpha3> = #14
+
+// tolerance parameters
+#<sizeTolerance> = #15
+#<wrongSizeAction> = #16
+#<positionTolerance> = #17
+#<wrongPositionAction> = #18
+#<angleTolerance> = #19
+#<wrongAngleAction> = #20
+#<printResults> = #21
+
+(Probe Protection)
+M66 P0
+o<probe_protection> call
+
+(we will need to know the accurate - tool table - tip radius)
+o<f360_tip_radius> call
+#<tip_radius> = #<_value>
+
+(and we need the speed to use for rapids)
+#<rapid_speed> = #<feed>
+
+G90 (set to absolute position mode)
+G92.1  (Cancel G92 offset, maybe some day it should be allowed)
+
+(rapid down to retract height)
+G1 F#<rapid_speed> Z#<retract>
+
+(how far to move out from centre)
+#<moveFromCentre> = [#<holediameter>/2 - #<clearance> - #<nominaldiameter>/2]
+
+#<xcentre> = #<x>
+#<ycentre> = #<y>
+
+#<loopcount> = 1
+o100 while [#<loopcount> LE 2]
+	(move to the centre)
+	G90
+	G38.3 X#<xcentre> Y#<ycentre> F[#<feed>]
+
+	(if the probe hit, print error and stop program)
+	o101 if [#5070 EQ 1]
+		(probe struck something)
+		(MSG, Probe made unexpected contact)
+		M0
+	o101 endif
+
+	(start with alpha1)
+	#<costheta> = cos[#<alpha1>]
+	#<sintheta> = sin[#<alpha1>]
+
+	(feed out to the start position)
+	o<f360_safe_move_xy> call [#<moveFromCentre> * #<costheta>] [#<moveFromCentre> * #<sintheta>] [#<feed>]
+
+	(then feed down to probe height)
+	o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+	(do the probe)
+	o<f360_probe_xy> call [#<alpha1>] [#<clearance> + #<overtravel>]
+
+	(where did the hit suggest the centre is)
+	#<xhit1> = [#5061]
+	#<yhit1> = [#5062]
+
+	(return to the centre)
+	G90 G1 F#<rapid_speed> X[#<xcentre> + #<costheta> * #<moveFromCentre>] Y[#<ycentre> + #<sintheta> * #<moveFromCentre>]
+	G0 Z#<retract>
+	G1 X#<xcentre> Y#<ycentre>
+
+	(alpha2)
+	#<costheta> = cos[#<alpha2>]
+	#<sintheta> = sin[#<alpha2>]
+
+	(feed out to the start position)
+	o<f360_safe_move_xy> call [#<moveFromCentre> * #<costheta>] [#<moveFromCentre> * #<sintheta>] [#<feed>]
+
+	(then feed down to probe height)
+	o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+	(do the probe)
+	o<f360_probe_xy> call [#<alpha2>] [#<clearance> + #<overtravel>]
+
+	(where did the hit suggest the centre is)
+	#<xhit2> = [#5061]
+	#<yhit2> = [#5062]
+
+	(return to the centre)
+	G90 G1 F#<rapid_speed> X[#<xcentre> + #<costheta> * #<moveFromCentre>] Y[#<ycentre> + #<sintheta> * #<moveFromCentre>]
+	G0 Z#<retract>
+	G1 X#<xcentre> Y#<ycentre>
+
+	(alpha3)
+	#<costheta> = cos[#<alpha3>]
+	#<sintheta> = sin[#<alpha3>]
+
+	(feed out to the start position)
+	o<f360_safe_move_xy> call [#<moveFromCentre> * #<costheta>] [#<moveFromCentre> * #<sintheta>] [#<feed>]
+
+	(then feed down to probe height)
+	o <f360_safe_move_z> call [-#<depth>] [#<feed>]
+
+	(do the probe)
+	o<f360_probe_xy> call [#<alpha3>] [#<clearance> + #<overtravel>]
+
+	(where did the hit suggest the centre is)
+	#<xhit3> = [#5061]
+	#<yhit3> = [#5062]
+
+	(return to the centre)
+	G90 G1 F#<rapid_speed> X[#<xcentre> + #<costheta> * #<moveFromCentre>] Y[#<ycentre> + #<sintheta> * #<moveFromCentre>]
+	G0 Z#<retract>
+	G1 X#<xcentre> Y#<ycentre>
+
+
+	(calculate centre of cricle)
+	(see http://www.ambrsoft.com/trigocalc/circle3d.htm for details)
+	
+	
+	#<A> = [#<xhit1> * [#<yhit2>-#<yhit3>] - #<yhit1> * [#<xhit2>-#<xhit3>] + #<xhit2> * #<yhit3> - #<xhit3> * #<yhit2>]
+	
+	#<B> = [[#<xhit1> * #<xhit1> + #<yhit1> * #<yhit1>] * [#<yhit3> - #<yhit2>]]
+	#<B> = [#<B> + [#<xhit2> * #<xhit2> + #<yhit2> * #<yhit2>] * [#<yhit1> - #<yhit3>]]
+	#<B> = [#<B> + [#<xhit3> * #<xhit3> + #<yhit3> * #<yhit3>] * [#<yhit2> - #<yhit1>]]
+	
+	#<C> = [[#<xhit1> * #<xhit1> + #<yhit1> * #<yhit1>] * [#<xhit2> - #<xhit3>]]
+	#<C> = [#<C> + [#<xhit2> * #<xhit2> + #<yhit2> * #<yhit2>] * [#<xhit3> - #<xhit1>]]
+	#<C> = [#<C> + [#<xhit3> * #<xhit3> + #<yhit3> * #<yhit3>] * [#<xhit1> - #<xhit2>]]
+	
+	#<D> = [[#<xhit1> * #<xhit1> + #<yhit1> * #<yhit1>] * [#<xhit3> * #<yhit2> - #<xhit2> * #<yhit3>]]
+	#<D> = [#<D> + [#<xhit2> * #<xhit2> + #<yhit2> * #<yhit2>] * [#<xhit1> * #<yhit3> - #<xhit3> * #<yhit1>]]
+	#<D> = [#<D> + [#<xhit3> * #<xhit3> + #<yhit3> * #<yhit3>] * [#<xhit2> * #<yhit1> - #<xhit1> * #<yhit2>]]
+	
+	#<xcentre> = [-#<B> / [2.0 * #<A>]]
+	#<ycentre> = [-#<C> / [2.0 * #<A>]]
+	#<rcalc> = [sqrt[[#<B> * #<B> + #<C> * #<C> - 4.0 * #<A> * #<D>] / [4 * #<A> * #<A>]] + #<tip_radius>]
+
+	(check for acceptable tolerance of r)
+	#<radiusError> = abs[#<rcalc> - #<holediameter> / 2.0]
+	
+	o102 if [#<_metric>]
+		#<radiusErrorLimit> = 1.0
+	o102 else
+		#<radiusErrorLimit> = 0.040
+	o102 endif
+	
+	o103 if [#<radiusError> GT #<radiusErrorLimit>]
+		(DEBUG,Partial probe radius error limit exceeded, radius error = #<radiusError>)
+		M0
+	o103 endif
+	
+	(increment the loop counter)
+	#<loopcount> = [#<loopcount> + 1]
+o100 endwhile
+
+(move up to retract height)
+G0 Z#<retract>
+
+#<diametercalc> = [#<rcalc> * 2.0]
+o202 if [#<printResults>]
+	(MSG,probing-xy-circular-partial-hole-with-island)
+	(DEBUG,Xcentre=#<xcentre>[#<x>]);
+	(DEBUG,Ycentre=#<ycentre>[#<y>]);
+	(DEBUG,Diameter=#<diametercalc>[#<holediameter>])
+o202 endif
+
+o200 if [#<targetwcs> GT 500]
+	(print report)
+	(LOGAPPEND,inspection.txt)
+	(LOG,Xcentre=#<xcentre>[#<x>],#<positionTolerance>,#<wrongPositionAction>);
+	(LOG,Ycentre=#<ycentre>[#<y>],#<positionTolerance>,#<wrongPositionAction>);
+	(LOG,Diameter=#<diametercalc>[#<holediameter>],#<sizeTolerance>,#<wrongSizeAction>)
+	(LOGCLOSE)
+o200 else
+	(tolerance testing)
+	o<f360_check_position> call [#<xcentre>] [#<x>] [#<positionTolerance>] [#<wrongPositionAction>]
+	o<f360_check_position> call [#<ycentre>] [#<y>] [#<positionTolerance>] [#<wrongPositionAction>]
+	o<f360_check_size> call [#<diametercalc>] [#<holediameter>] [#<sizeTolerance>] [#<wrongSizeAction>]
+
+	(update the wcs)
+	o<f360_update_x> call [#<targetwcs>] [#<xcentre>] [#<x>]
+	o<f360_update_y> call [#<targetwcs>] [#<ycentre>] [#<y>]
+o200 endif
+
+o<f360_probing-xy-circular-partial-hole-with-island> endsub
+
+M02 (end program)
+

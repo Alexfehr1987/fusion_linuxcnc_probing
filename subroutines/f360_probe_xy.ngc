@@ -1,0 +1,40 @@
+o<f360_probe_xy> sub
+(probe in arbitrary direction)
+
+(fetch our parameters into named variables)
+#<theta> = #1
+#<dmax> = #2
+
+(Probe Protection)
+M66 P0
+o<probe_protection> call
+
+#<costheta> = cos[#<theta>]
+#<sintheta> = sin[#<theta>]
+
+(we need to know probing parameters)
+o<f360_fast_probe_speed> call
+#<fastprobespeed> = #<_value>
+
+o<f360_slow_probe_speed> call
+#<slowprobespeed> = #<_value>
+
+o<f360_slow_probe_distance> call
+#<slowprobedistance> = #<_value>
+
+(do the fast probe)
+(set to relative position mode)
+G91 
+G38.2 X[#<costheta> * #<dmax>] Y[#<sintheta> * #<dmax>] F#<fastprobespeed>
+
+(if that succeeded, retract the slow probe distance)
+
+(fast probe succeeded, retract a small amount)
+G1 X[-#<costheta>*#<slowprobedistance>] Y[-#<sintheta>*#<slowprobedistance>]
+
+(then do the slow probe)
+G38.2 X[#<costheta> * #<slowprobedistance> * 2] Y[#<sintheta> * #<slowprobedistance> * 2] F#<slowprobespeed>
+
+o<f360_probe_xy> endsub
+
+M02 (end program)

@@ -1,0 +1,10 @@
+o<m300> sub
+
+o<100> if [#5403 NE 0]
+	(MSG,Tool already measured)
+o<100> else
+
+ o<tool_touch_off_m300> call
+o<100> endif 
+o<m300> endsub
+M2
