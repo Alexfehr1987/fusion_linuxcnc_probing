@@ -8,13 +8,11 @@ Important:
 
 additional features:  
 -M300 for in G-Code tool-lenght probing  
--Probe active Pin checked to prevent crashing  
--Probe Tip Calibration Value used from Probebasic  
+-Probe active Pin checked to prevent crashing  (Probe protection subroutine)
+-Probe Tip Calibration Value used from Probebasic  (Parameter #1000)
 
 
 not tested:  
--probing -y angle  
--probing -x angle  
 -inch mode
 
 known issues:  
