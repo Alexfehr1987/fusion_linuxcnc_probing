@@ -2,8 +2,8 @@
 G21
 
 (Probing control variables)
-#<_probeFastSpeed>= 762.
-#<_probeSlowSpeed>= 50.8
+#<_probeFastSpeed>= 500.
+#<_probeSlowSpeed>= 24.5
 #<_probeSlowDistance>= 1.016
 
 (Probe Protection)
