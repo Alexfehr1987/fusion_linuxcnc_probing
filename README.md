@@ -23,7 +23,7 @@ not tested:
 known issues:  
 -angle probing only working with G54 and without override wcs from fusion(drive g54 from g55 e.g.)  
 -tool table needs to be in metric
--machine simulation only working with machine configuration   
+-machine simulation only working with machine configuration  
 -Probing Cycles not possible with machine simulation(but with vise, chuck e.g.)-->sepatate setup for probe cycles or deactivate probe cycles temporary for complete machine simulation
 
 
