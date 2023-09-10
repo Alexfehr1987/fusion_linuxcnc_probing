@@ -4,8 +4,8 @@ modified Postprocessor to accept Fusion360 Probing cylcles.
 
 Key features:   
 -Fusion Probing Cycles
--Fusion Edge angle probing for G54 
--Machine Simulation with rotary axis possible
+-Fusion Edge angle probing for G54  
+-Machine Simulation with rotary axis possible  
 -latest Linuxcnc post from Fusion as base 44083
 
 Important:  
@@ -13,7 +13,7 @@ Important:
 -will not work out of the box, due to adaption to my machine/hal...  
 
 additional features:  
--Probe active Pin checked to prevent crashing  (Probe protection subroutine checks motion.digital-in-00 pin with M66)
+-Probe active Pin checked to prevent crashing  (Probe protection subroutine checks motion.digital-in-00 pin with M66)  
 -Probe Tip Calibration Value used from Probebasic  (Parameter #1000)
 
 
@@ -23,7 +23,7 @@ not tested:
 known issues:  
 -angle probing only working with G54 and without override wcs from fusion(drive g54 from g55 e.g.)  
 -tool table needs to be in metric
--machine simulation only working with machine configuration 
+-machine simulation only working with machine configuration  
 -Probing Cycles not possible with machine simulation(but with vise, chuck e.g.)-->sepatate setup for probe cycles or deactivate probe cycles temporary for complete machine simulation
 
 
