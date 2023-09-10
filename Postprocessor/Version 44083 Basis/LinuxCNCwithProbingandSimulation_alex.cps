@@ -299,8 +299,16 @@ function onOpen() {
 
   // absolute coordinates, feed per min, and incremental arc center mode
   writeBlock(gAbsIncModal.format(90), gFeedModeModal.format(94), gPlaneModal.format(17), gFormat.format(91.1));
-  writeBlock(gUnitModal.format(unit == MM ? 21 : 20));
+  writeBlock(gUnitModal.format(unit == MM ? 21 : 20), formatComment(localize("Metric")));
   validateCommonParameters();
+
+  	// write probing variables
+	writeComment("Probing control variables");
+	writeBlock("#<_probeFastSpeed>=", xyzFormat.format((unit == MM ? 25.4 : 1) * getProperty("probeFastSpeed")));
+	writeBlock("#<_probeSlowSpeed>=", xyzFormat.format((unit == MM ? 25.4 : 1) * getProperty("probeSlowSpeed")));
+	writeBlock("#<_probeSlowDistance>=", xyzFormat.format((unit == MM ? 25.4 : 1) * getProperty("probeSlowDistance")));
+
+  writeComment("End of pre-amble")
 }
 
 function setSmoothing(mode) {
@@ -1825,9 +1833,10 @@ var compensateToolLength = false; // add the tool length to the pivot distance f
 function defineMachine() {
   var useTCP = true;
   if (false) { // note: setup your machine here
-    var aAxis = createAxis({coordinate:0, table:true, axis:[1, 0, 0], range:[-120, 120], preference:1, tcp:useTCP});
-    var cAxis = createAxis({coordinate:2, table:true, axis:[0, 0, 1], range:[-360, 360], preference:0, tcp:useTCP});
-    machineConfiguration = new MachineConfiguration(aAxis, cAxis);
+    var aAxis = createAxis({coordinate:0, table:true, axis:[-1, 0, 0], range:[-360, 360], preference:1, tcp:useTCP});
+    //var cAxis = createAxis({coordinate:2, table:true, axis:[0, 0, 1], range:[-360, 360], preference:0, tcp:useTCP});
+    //machineConfiguration = new MachineConfiguration(aAxis, cAxis);
+    machineConfiguration = new MachineConfiguration(aAxis);
 
     setMachineConfiguration(machineConfiguration);
     if (receivedMachineConfiguration) {
@@ -2869,7 +2878,7 @@ properties.preloadTool = {
   description: "Preloads the next tool at a tool change (if any).",
   group      : "preferences",
   type       : "boolean",
-  value      : true,
+  value      : false,
   scope      : "post"
 };
 properties.useSmoothing = {
