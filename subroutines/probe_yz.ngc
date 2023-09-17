@@ -1,11 +1,16 @@
+(Probe Script to find center of Rotary Axis)
+
+o<probe_yz> sub
+
 (do this in metric)
 G21
 
 (Probing control variables)
-#<_probeFastSpeed>= 500.
-#<_probeSlowSpeed>= 24.5
+#<_probeFastSpeed>= 762.
+#<_probeSlowSpeed>= 50.8
 #<_probeSlowDistance>= 1.016
 
+M64 P10
 (Probe Protection)
 M66 P0
 o<probe_protection> call
@@ -84,6 +89,9 @@ G1 Y0 A0.0
 o<f360_update_y> call [0.0] [[#<yhit1> + #<yhit2>] / 2.0] [0.0]
 o<f360_update_z> call [0.0] [#<zhit>] [[#<yhit2> - #<yhit1>] / 2.0]
 
-(end of program)
 G90
-M30
+M65 P10
+o<probe_yz> endsub
+
+M2 (end of program)
+ 

@@ -1,17 +1,27 @@
+(Probe Rotary and align horizontal)
+(Rotary XY needs to be probed before)
+
+o<probe_rotary> sub
+
 (do this in metric)
 G21
 
 (Probing control variables)
-#<_probeFastSpeed>= 762.
-#<_probeSlowSpeed>= 50.8
+#<_probeFastSpeed>= 508.
+#<_probeSlowSpeed>= 25.4
 #<_probeSlowDistance>= 1.016
 
+(workspace_a)
+
+#<workspace_a> = #[5204 + [20 * #5220]]
+
+M64 P11
 (Probe Protection)
 M66 P0
 o<probe_protection> call
 
 (select the correct wcs for rotary work)
-G54.1 P100
+G54
 
 (clearance set to 10 mm)
 #<clearance> = 10.0
@@ -50,9 +60,11 @@ o100 endif
 (DEBUG,Angle was #<angleResult>, should have been #5423)
 
 (now correct the wcs)
-G10 L2 P0 A[#<_work_offset_a> - #<angleResult>+#5423]
+G10 L2 P0 A[#<workspace_a> - #<angleResult>+#5423]
 G0 A0.0
 
-(end of program)
 G90
-M30
+M65 P11
+o<probe_rotary> endsub
+
+M2 (end of program)
