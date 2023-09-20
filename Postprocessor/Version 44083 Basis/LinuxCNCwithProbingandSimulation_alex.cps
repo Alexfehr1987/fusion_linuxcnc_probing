@@ -295,6 +295,7 @@ function onOpen() {
   writeln("%");
   writeComment(programName);
   writeComment(programComment);
+  writeComment("PP Version: Linuxcnc with Probing and Simulation based on 44083");
   writeProgramHeader();
 
   // absolute coordinates, feed per min, and incremental arc center mode
